@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Tp Entregable</title>
+
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+
+    <script>
+        const URL = "https://69f3d4c9bd2396bf5310697c.mockapi.io/videogames"; //creada variable con link api
+
+        window.onload = function() {
+            getInfo()
+        }
+    
+    //PROMESAS//
+    
+        function getAll(){
+            return new Promise(function(resolve, reject) {
+                var request = new XMLHttpRequest()
+                request.open('GET', URL)
+                request.responseType = 'json'
+                request.onload = function() {
+                    if (request.status == 200) {
+                        resolve(request.response)
+                    } else {
+                        reject(Error(request.statusText))
+                    }
+                }
+                request.onerror = function() {
+                    reject(Error('Error: unexpected network error.'))
+                }
+                request.send()
+            })
+
+    }  
+    
+        function postObject() {
+            return new Promise(function(resolve, reject){
+                var request = new XMLHttpRequest()
+                request.open('POST', URL)
+                request.setRequestHeader('Content-Type', 'application/json')
+                var game = JSON.stringify({
+                    'name': document.getElementById('name').value,
+                    'release': document.getElementById('release').value,
+                    'price': document.getElementById('price').value,
+                })
+                request.onload = function() {
+                    if (request.status == 201) {
+                    resolve(request.response)
+                    } else {
+                    reject(Error(request.statusText))
+                }
+            }
+                request.onerror = function() {
+                    reject(Error('Error: unexpected netwwork error.'))
+            }
+                request.send(game)
+        })
+        }
+    
+        
+        function idUpdate() {
+            
+            return new Promise(function(resolve, reject){
+                var request = new XMLHttpRequest()
+                request.open('PUT', URL + `/${document.getElementsByName('id2')[0].value}`)
+                request.setRequestHeader('Content-Type', 'application/json')
+                var game = JSON.stringify({
+                    'name': document.getElementsByName("name2")[0].value,
+                    'release': document.getElementsByName("release2")[0].value,
+                    'price': document.getElementsByName('price2')[0].value
+                })
+                request.onload = function() {
+                    if (request.status == 200) {
+                        resolve(request.response)
+                    } else {
+                        reject(Error(request.statusText))
+                    }
+                }
+                request.onerror = function() {
+                    reject(Error('Error: unexpected network error.'))
+                }
+                request.send(game)
+            })
+    }
+
+        function idDelete(id) {
+            return new Promise(function(resolve, reject) {
+                var request = new XMLHttpRequest()
+                request.open('DELETE', URL + `/${id}`)
+                request.setRequestHeader('Content-Type', 'application/json')
+                request.onload = function() {
+                    if (request.status == 200) {
+                        resolve(request.response)
+                    } else {
+                        reject(Error(request.statusText))
+                    }
+                }
+                request.onerror = function() {
+                    reject(Error('Error: unexpected network error.'))
+                }
+                request.send()
+            })
+
+
+    }
+
+    //Funciones que consumen Promesas//
+
+        function getInfo() {
+            getAll().then(response => {
+                var tbody = document.querySelector('tbody')
+                tbody.innerHTML = ''
+                response.forEach(e => {
+                    var row = tbody.insertRow()
+                    var name = row.insertCell()
+                    name.innerHTML = e.name
+                    var release = row.insertCell()
+                    release.innerHTML = e.release
+                    var price = row.insertCell()
+                    price.innerHTML = e.price
+                    var id = row.insertCell()
+                    id.innerHTML = e.id
+                    var info = ({
+                        'name': e.name,
+                        'release': e.release,
+                        'price': e.price,
+                        'id': e.id,
+                    })
+                    var view = row.insertCell()
+                    view.innerHTML = `<button onclick='viewGame(${JSON.stringify(info)})'>View</button>`
+                    var del = row.insertCell()
+                    del.innerHTML = `<button onclick='deleteGame(${e.id})'>Delete</button>`
+                })
+                document.getElementById('name').value = ''
+                document.getElementById('release').value = ''
+                document.getElementById('price').value = ''
+            }).catch(reason => {
+                console.error(reason)
+            })
+        }
+
+        function saveInfo() {
+            if (document.getElementById('name').value.trim() !== '' &&
+                document.getElementById('release').value.trim() !== '' &&
+                document.getElementById('price').value.trim() !== ''
+                ) {
+                postObject().then(() => {
+                    getInfo()
+                }).catch(reason => {
+                    console.error(reason)
+                })
+            }
+        }
+
+        function viewGame(game) {
+            document.getElementsByName('name2') [0].value = game.name
+            document.getElementsByName('release2') [0].value = game.release
+            document.getElementsByName('price2')[0].value = game.price
+            document.getElementsByName('id2')[0].value = game.id
+            $('#popUp').dialog({
+                closeText: ''
+            }).css('font-size', '15px')
+        }
+
+        function deleteGame(id) {
+            idDelete(id).then(() => {
+                getInfo()
+            }).catch(reason => {
+                console.error(reason)
+            })
+        }
+
+        function updateGame() {
+            if (document.getElementsByName('name2')[0].value.trim() !== '' &&
+                document.getElementsByName('release2')[0].value.trim() !== '' &&
+                document.getElementsByName('price2')[0].value.trim() !== '' &&
+                document.getElementsByName('id2')[0].value.trim() !== '') {
+                    idUpdate().then(() => {
+                        $('#popUp').dialog('close')
+                        getInfo()
+                    }).catch(reason => {
+                        console.error(reason)
+                    })
+        }
+    }
+
+
+
+
+
+
+    </script>
+
+</head>
+
+    <body>
+        <h1>Ejemplo actividad</h1>
+        <table border="2">
+            <thead>
+                <tr>
+                    <th style='text-align: left'>Name</th>
+                    <th style='text-align: left'>Release</th>
+                    <th style='text-align: left'>Price (USD)</th>
+                    <th style='text-align: left'>Id</th>
+                    <th colspan='2'></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+                <tr>
+                    <td><input id='name' placeholder="Name" style="width: 100%; box-sizing: border-box;" /></td>
+                    <td><input id="release" placeholder="Release" style="width: 100%; box-sizing: border-box;" /></td>
+                    <td><input id="price" placeholder="Price" style="width: 100%; box-sizing: border-box;" /></td>
+                    
+                    <td colspan='3' style='text-align: center'><button onclick='saveInfo()'>Add</button></td>
+                </tr>
+            </tfoot>
+            <tr>
+            </tr>            
+        </table>
+
+        <div id='popUp' title="Edit Game" style="display: none">
+        <table>
+            <tr>
+                <td><label style='font-weight: bold'>Name</label></td>
+                <td><input name='name2' style='text-align: right' readonly /></td>
+            </tr>
+            <tr>
+                <td><label style='font-weight: bold'>Release</label></td>
+                <td><input name='release2' style='text-align: right' /></td>
+            </tr>
+            <tr>
+                <td><label style='font-weight: bold'>Price</label></td>
+                <td><input name='price2' style='text-align: right' /></td>
+            </tr>
+            <tr>
+                <td><label style='font-weight: bold'>ID</label></td>
+                <td><input name='id2' style='text-align: right' readonly /></td>
+            </tr>
+            <tr>
+                <td colspan='2' style='text-align: center'><button onclick='updateGame()'>Update</button></td>
+            </tr>
+        </table>
+    </div>
+    </body>
+</html>
