@@ -118,14 +118,14 @@
                 tbody.innerHTML = ''
                 response.forEach(e => {
                     var row = tbody.insertRow()
+                    var id = row.insertCell()
+                    id.innerHTML = e.id
                     var name = row.insertCell()
                     name.innerHTML = e.name
                     var release = row.insertCell()
                     release.innerHTML = e.release
                     var price = row.insertCell()
                     price.innerHTML = e.price
-                    var id = row.insertCell()
-                    id.innerHTML = e.id
                     var info = ({
                         'name': e.name,
                         'release': e.release,
@@ -140,6 +140,7 @@
                 document.getElementById('name').value = ''
                 document.getElementById('release').value = ''
                 document.getElementById('price').value = ''
+                document.getElementById('name').focus();
             }).catch(reason => {
                 console.error(reason)
             })
@@ -204,16 +205,17 @@
         <table border="2">
             <thead>
                 <tr>
+                    <th style='text-align: left'>Id</th>
                     <th style='text-align: left'>Name</th>
                     <th style='text-align: left'>Release</th>
                     <th style='text-align: left'>Price (USD)</th>
-                    <th style='text-align: left'>Id</th>
                     <th colspan='2'></th>
                 </tr>
             </thead>
             <tbody></tbody>
             <tfoot>
                 <tr>
+                    <td></td>
                     <td><input id='name' placeholder="Name" style="width: 100%; box-sizing: border-box;" /></td>
                     <td><input id="release" placeholder="Release" style="width: 100%; box-sizing: border-box;" /></td>
                     <td><input id="price" placeholder="Price" style="width: 100%; box-sizing: border-box;" /></td>
